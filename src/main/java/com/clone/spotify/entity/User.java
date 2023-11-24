@@ -26,6 +26,10 @@ public class User {
     @Column(nullable = false)
     private Date birth;
 
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private String gender;
 
     @ManyToMany(fetch = FetchType.EAGER)

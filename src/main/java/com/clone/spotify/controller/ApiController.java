@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,32 +39,43 @@ public class ApiController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody User data, HttpServletResponse response) {
-        String username = data.getEmail();
-        String password = data.getPassword();
+        try {
 
-        // 서비스 레이어 호출
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtTokenProvider.createToken(username, authentication.getAuthorities());
+            String username = data.getEmail();
+            String password = data.getPassword();
 
-        // 쿠키 생성 및 설정
-        Cookie cookie = new Cookie("JWT_TOKEN", token);
-        cookie.setHttpOnly(true); // XSS 방지
-        cookie.setPath("/"); // 쿠키 경로 설정
-        cookie.setMaxAge((int) (validityInMilliseconds / 1000)); // 쿠키의 만료 시간을 초단위로 설정
-        response.addCookie(cookie);
+            // 서비스 레이어 호출
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtTokenProvider.createToken(username, authentication.getAuthorities());
 
-        Map<Object, Object> model = new HashMap<>();
-        model.put("username", username);
-        model.put("token", token);
+            // 쿠키 생성 및 설정
+            Cookie cookie = new Cookie("JWT_TOKEN", token);
+            cookie.setHttpOnly(true); // XSS 방지
+            cookie.setPath("/"); // 쿠키 경로 설정
+            cookie.setMaxAge((int) (validityInMilliseconds / 1000)); // 쿠키의 만료 시간을 초단위로 설정
+            response.addCookie(cookie);
 
-        return ResponseEntity.ok(model);
+            Map<Object, Object> model = new HashMap<>();
+            model.put("username", username);
+            model.put("token", token);
+
+            return ResponseEntity.ok(model);
+
+        } catch (AuthenticationException e) {
+            // 로그인 실패 시 반환할 메시지
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "이메일 및 비밀번호 조합이 잘못되었습니다.");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(errorResponse);
+        }
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> createUser(User user) {
+    public ResponseEntity<User> createUser(@RequestBody User user) {
         // 사용자에게 받은 정보로 유저를 생성해서
         User newUser = userService.createUser(user);
         // 생성한 유저를 response에 담아 반환해준다 (로그인을 바로 시키기 위함)
