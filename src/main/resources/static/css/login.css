@@ -1,0 +1,134 @@
+@charset "utf-8";
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: #fff;
+}
+body{
+    background-color: rgb(18, 18, 18);
+}
+.title{
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    width: 380px;
+}
+.title p{
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 18px;
+    margin-top: 18%;
+    font-weight: 500;
+}
+.title i{
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    font-size: 20px;
+}
+
+.login_form{
+    position: relative;
+    display: block;
+    width: 380px;
+    height: auto;
+    margin: 0 auto;
+    margin-top: 30px;
+}
+.login_form p{
+    position: relative;
+    display: block;
+    font-size: 23px;
+    font-weight: 600;
+    padding-bottom: 5px;
+}
+.user_email{
+    position: relative;
+    display: block;
+    margin-bottom: 26px;
+}
+input{
+    margin: 0 auto;
+    width: 380px;
+    height: 50px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgb(65, 66, 66);
+    padding: 0px 10px;
+    font-size: 17px;
+}
+input:focus{
+    background-color: rgb(113, 113, 113);
+    outline: none;
+    caret-color: rgb(30, 215, 96);
+    color: #fff;
+}
+.email_input{
+    position: relative;
+}
+.password_input{
+    position: relative;
+}
+.password_input i{
+    position: absolute;
+    display: block;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+    font-size: 25px;
+}
+.login_btn{
+    position: relative;
+    display: block;
+    width: 135px;
+    height: 52px;
+    margin: 0 auto;
+    text-align: center;
+    background-color:  rgb(65, 66, 66);
+    border: none;
+    border-radius: 50px;
+    margin-top: 50px;
+}
+.login_btn a{
+    color: #000;
+    text-decoration: none;
+    font-weight: 700;
+}
+.login_btn:hover{
+    background-color: rgb(30, 215, 96);
+    color: #000
+}
+.nopassword_login{
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    width: 155px;
+    height: 32px;
+    background-color: rgb(18, 18, 18);
+    border: 1px solid rgb(65, 66, 66);
+    margin-top: 20px;
+    border-radius: 50px;
+}
+.nopassword_login a{
+    text-decoration: none;
+    font-size: 11px;
+}
+#prev_btn {
+    z-index: 1;
+}
+
+span{
+    font-size: 12px;
+    color: rgb(190, 190, 190);
+}
+
+
+
+/* input{
+    color:  rgb(188, 41, 56);
+    background-color: rgb(217, 216, 217);
+} */
