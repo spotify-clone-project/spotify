@@ -1,0 +1,189 @@
+@charset "utf-8";
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: #fff;
+}
+ul,li{
+    list-style: none;
+}
+a{
+    color: #333;
+    text-decoration: none;
+    color: #fff;
+}
+button{
+    all: unset;
+}
+.wrap {
+    background-color: #121212;
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column;
+    /* justify-content: center;  */
+    align-items: center; 
+}
+#step1{
+    text-align: center;
+}
+.spotify_logo img{
+    position: relative;
+    width: 55px;
+    margin: 0 auto;
+    margin-top: 72%;
+}
+.txt{
+    position: relative;
+    display: block;
+    text-align: center;
+    font-size: 17px;
+    padding: 0px 20px 0px 20px;
+    margin-top: 10%;
+}
+.join_form{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin-top: 10%;
+}
+.join_form a {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.btn{
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 324px;
+    margin: 0 auto;
+    height: 50px;
+    margin-bottom: 3%;
+    border-radius: 50px;
+    border: 1px solid var(--essential-subdued,#878787);
+    
+}
+.btn button{
+    font-size: 14px;
+    font-weight: 600;
+}
+.btn_icon{
+    position: absolute;
+    top: 53%;
+    left: 5%;
+    transform: translateY(-50%);
+    margin: 0;
+    padding: 0;
+
+
+}
+.join_btn{
+    display: block;
+    background-color: rgb(27, 215, 96);
+    border: none;
+    color: #000;
+}
+.login{
+    position: relative;
+    display: block;
+    margin-top: 5%;
+}
+section {
+    display: none;
+}
+
+section.current {
+    display: block;
+}
+
+/* 계정만들기-이메일  */
+
+.title{
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    width: 380px;
+}
+.title p{
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 18px;
+    margin-top: 18%;
+    font-weight: 500;
+}
+.title i{
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    font-size: 20px;
+}
+
+input, select{
+    margin: 0 auto;
+    width: 380px;
+    height: 50px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgb(65, 66, 66);
+    padding: 0px 10px;
+    font-size: 17px;
+    margin-bottom: 5px;
+}
+input:focus{
+    background-color: rgb(113, 113, 113);
+    outline: none;
+    caret-color: rgb(30, 215, 96);
+    color: #fff;
+}
+.explane{
+    position: relative;
+    display: block;
+    font-size: 23px;
+    font-weight: 600;
+    padding-bottom: 5px;
+    margin-top: 40px;
+}
+.next_btn, #signup_btn{
+    position: relative;
+    display: block;
+    width: 90px;
+    height: 52px;
+    margin: 0 auto;
+    text-align: center;
+    background-color:  rgb(65, 66, 66);
+    border: none;
+    border-radius: 50px;
+    margin-top: 35px;
+    color: #000;
+    font-size: 14px;
+    font-weight: 600;
+}
+.prev_btn {
+    z-index: 1;
+}
+#signup_btn{
+    width: 140px;
+}
+span{
+    font-size: 12px;
+    color: rgb(190, 190, 190);
+}
+
+/* 비밀번호 만들기 */
+.password_input{
+    position: relative;
+}
+.password_input i{
+    position: absolute;
+    display: block;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+    font-size: 25px;
+}

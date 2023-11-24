@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/signup.css">
+    <title>계정만들기</title>
+</head>
+<body>
+    <div class="wrap">
+        <section id="step1" >
+            <div class="spotify_logo">
+                <img src="/images/Spotify_logo_white.svg" alt="logo">
+            </div>
+            <div class="txt">
+                <h1>내 마음에 꼭 드는 또 다른 플레이리스트를 발견해보세요.</h1>
+            </div>
+            <div class="join_form">
+                <button class="btn join_btn">가입하기</button>
+                <a href="#" class="btn">
+                    <div class="btn_icon">
+                        <img src="/images/google-icon.svg" alt="google">
+                    </div>
+                    <button>Google로 계속하기</button>
+                </a>
+                <a href="#" class="btn">
+                    <div class="btn_icon">
+                        <img src="/images/facebook-icon.svg" alt="facebook">
+                    </div>
+                    <button>Facebook으로 계속하기</button>
+                </a>
+                <a href="#" class="btn">
+                    <div class="btn_icon">
+                        <img src="/images/apple-icon.svg" alt="apple">
+                    </div>
+                    <button>Apple로 계속하기</button>
+                </a>
+            </div>
+            <a href="/login" class="login">로그인하기</a>
+        </section>
+        <section id="step2" >
+            <div class="title">
+                <i class="prev_btn fa-solid fa-chevron-left"></i>
+                <p>계정 만들기</p>
+            </div>
+            <div class="user_email">
+                <p class="explane">이메일 주소가 무엇인가요?</p>
+                <div class="email_input">
+                    <input type="text" name="email" autocomplete="off">
+                </div>
+            </div>
+            <span class="msg">나중에 이 이메일 주소를 확인해야 합니다.</span>
+            <button class="next_btn">
+                다음
+            </button>
+        </section>
+        <section id="step3" >
+            <div class="title">
+                <i class="prev_btn fa-solid fa-chevron-left"></i>
+                <p>계정 만들기</p>
+            </div>
+            <div class="user_password">
+                <p class="explane">비밀번호 만들기</p>
+                <div class="password_input">
+                  <input type="password" name="password">
+                  <i class="fa-regular fa-eye" style="color: #ffffff;"></i>
+                </div>
+              </div>
+            <span class="msg">8자 이상을 사용하세요.</span>
+            <button class="next_btn">
+                다음
+            </button>
+        </section>
+        <section id="step4" >
+            <div class="title">
+                <i class="prev_btn fa-solid fa-chevron-left"></i>
+                <p>계정 만들기</p>
+            </div>
+            <div class="user_birth">
+                <p class="explane">생년월일이 언제인가요?</p>
+                <div class="birth_input">
+                    <input type="date" name="birth" value="2013-11-23">
+                </div>
+            </div>
+            <span class="msg"></span>
+            <button class="next_btn">
+                다음
+            </button>
+        </section>
+        <section id="step5">
+            <div class="title">
+                <i class="prev_btn fa-solid fa-chevron-left"></i>
+                <p>계정 만들기</p>
+            </div>
+            <div class="user_gender">
+                <p class="explane">성별이 무엇인가요?</p>
+                <select name="gender" id="gender">
+                    <option value="woman">여성</option>
+                    <option value="man">남성</option>
+                    <option value="non-binary">논바이너리</option>
+                    <option value="none">답변하고 싶지 않음</option>
+                    <option value="etc">기타</option>
+                </select>
+            </div>
+            <span class="msg"></span>
+            <button class="next_btn">
+                다음
+            </button>
+        </section>
+        <section id="step6">
+            <div class="title">
+                <i class="prev_btn fa-solid fa-chevron-left"></i>
+                <p>계정 만들기</p>
+            </div>
+            <div class="user_email">
+                <p class="explane">이름이 무엇인가요?</p>
+                <div class="name_input">
+                    <input type="text" name="name" autocomplete="off">
+                </div>
+            </div>
+            <span class="msg">Spotify 프로필에 표시됩니다.</span>
+            <div class="terms">
+                <div>
+                </div>
+            </div>
+            <button id="signup_btn">
+                계정 만들기
+            </button>
+        </section>
+    </div>
+
+    <form method="post" action="/api/signup">
+        <p><input type="email" name="email" value="noah3521@icloud.com"></p>
+        <p><input type="password" name="password" value="julia@1004"></p>
+        <p><input type="date" name="birth" value="2005-12-30"></p>
+        <p><input type="text" name="gender" value="남자"></p>
+        <p><input type="submit" value="회원가입"></p>
+    </form>
+
+    <script src="https://kit.fontawesome.com/90ada3e0f4.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/signup.js"></script>
+    
+</body>
+</html>
