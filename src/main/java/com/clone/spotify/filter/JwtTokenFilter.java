@@ -1,5 +1,6 @@
 package com.clone.spotify.filter;
 
+import com.clone.spotify.Exception.UserNotFoundException;
 import com.clone.spotify.service.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -24,32 +25,40 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String path = request.getRequestURI();
 
-        // 공개 경로에 대한 요청인 경우 토큰 검증 생략
-        if ("/login".equals(path) || "/signup".equals(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        try {
+            Cookie[] cookies = request.getCookies();
+            String token = null;
 
-        Cookie[] cookies = request.getCookies();
-        String token = null;
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("JWT_TOKEN".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("JWT_TOKEN".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
                 }
             }
-        }
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            Authentication auth = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-        }
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Authentication auth = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
 
-        filterChain.doFilter(request, response);
+            // 유효하지 않은 쿠키 뺏기
+            expireCookie(response, "JWT_TOKEN");
+        } finally {
+            filterChain.doFilter(request, response);
+        }
+    }
+
+    private void expireCookie(HttpServletResponse response, String cookieName) {
+        Cookie cookie = new Cookie(cookieName, null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // 쿠키 즉시 만료
+        response.addCookie(cookie);
     }
 
 }
