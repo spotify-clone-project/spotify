@@ -82,7 +82,7 @@ public class ApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         userService.logout(response);
         return ResponseEntity.ok().body("Logout successful");
