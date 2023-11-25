@@ -2,12 +2,12 @@ package com.clone.spotify.service;
 
 import com.clone.spotify.Exception.UserNotFoundException;
 import io.jsonwebtoken.*;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -17,24 +17,33 @@ import java.util.stream.Collectors;
 @Service
 public class JwtTokenProvider {
 
-    private final UserDetailsService userService;
+    private final UserService userService;
 
-    public JwtTokenProvider(UserDetailsService userService) {
+    public JwtTokenProvider(UserService userService) {
         this.userService = userService;
     }
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.accessSecret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
-    private long validityInMilliseconds;
+    @Getter
+    @Value("${jwt.accessExpiration}")
+    private long accessTokenValidityInMilliseconds;
+
+    @Value("${jwt.refreshSecret}")
+    private String refreshSecretKey;
+
+    @Getter
+    @Value("${jwt.refreshExpiration}")
+    private long refreshTokenValidityInMilliseconds;
+
 
     public String createToken(String username, Collection<? extends GrantedAuthority> authorities) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("auth", authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
+        Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -53,6 +62,29 @@ public class JwtTokenProvider {
         }
     }
 
+    // 리프레시 토큰 생성
+    public String createRefreshToken(String username) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds); // 리프레시 토큰의 유효기간 설정
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(SignatureAlgorithm.HS256, refreshSecretKey) // 리프레시 토큰용 비밀키 사용
+                .compact();
+    }
+
+    // 리프레시 토큰 유효성 검증
+    public boolean validateRefreshToken(String token) {
+        try {
+            Jws<Claims> claims = Jwts.parser().setSigningKey(refreshSecretKey).parseClaimsJws(token);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     public Authentication getAuthentication(String token) {
         // 토큰에서 사용자 이름 추출
         String email = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
@@ -63,5 +95,11 @@ public class JwtTokenProvider {
         }
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
+
+    public String getUsernameFromToken(String token) {
+        return Jwts.parser().setSigningKey(refreshSecretKey).parseClaimsJws(token).getBody().getSubject();
+    }
+
+
 }
 

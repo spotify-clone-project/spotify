@@ -1,20 +1,16 @@
 package com.clone.spotify.controller;
 
 import com.clone.spotify.entity.User;
+import com.clone.spotify.service.AuthenticationService;
 import com.clone.spotify.service.JwtTokenProvider;
 import com.clone.spotify.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,68 +20,53 @@ import java.util.Map;
 @Slf4j
 public class ApiController {
 
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationService authenticationService;
 
-    @Value("${jwt.expiration}")
-    private long validityInMilliseconds;
-
-    public ApiController(UserService userService, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
-        this.userService = userService;
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
+    public ApiController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody User data, HttpServletResponse response) {
         try {
-
-            String username = data.getEmail();
-            String password = data.getPassword();
-
-            // 서비스 레이어 호출
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtTokenProvider.createToken(username, authentication.getAuthorities());
-
-            // 쿠키 생성 및 설정
-            Cookie cookie = new Cookie("JWT_TOKEN", token);
-            cookie.setHttpOnly(true); // XSS 방지
-            cookie.setPath("/"); // 쿠키 경로 설정
-            cookie.setMaxAge((int) (validityInMilliseconds / 1000)); // 쿠키의 만료 시간을 초단위로 설정
-            response.addCookie(cookie);
-
-            Map<Object, Object> model = new HashMap<>();
-            model.put("username", username);
-            model.put("token", token);
-
-            return ResponseEntity.ok(model);
-
+            Map<String, String> tokens = authenticationService.authenticateUserAndCreateTokens(data, response);
+            return ResponseEntity.ok().body(tokens);
         } catch (AuthenticationException e) {
-            // 로그인 실패 시 반환할 메시지
             Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("message", "이메일 및 비밀번호 조합이 잘못되었습니다.");
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(errorResponse);
+            errorResponse.put("message", "이메일 또는 비밀번호가 잘못되었습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        // 사용자에게 받은 정보로 유저를 생성해서
-        User newUser = userService.createUser(user);
-        // 생성한 유저를 response에 담아 반환해준다 (로그인을 바로 시키기 위함)
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+    public ResponseEntity<?> createUser(@RequestBody User user, HttpServletResponse response) {
+        String originalPassword = user.getPassword();  // 원본 비밀번호 저장
+        authenticationService.createUser(user);  // DB에 유저 저장 (비밀번호 암호화)
+
+        // 원본 비밀번호를 가진 새로운 User 객체 생성
+        User userForAuth = new User();
+        userForAuth.setEmail(user.getEmail());
+        userForAuth.setPassword(originalPassword);
+
+        // 인증 및 토큰 생성
+        Map<String, String> tokens = authenticationService.authenticateUserAndCreateTokens(userForAuth, response);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(tokens);
     }
+
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-        userService.logout(response);
+        authenticationService.logout(response);
         return ResponseEntity.ok().body("Logout successful");
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        return authenticationService.refreshToken(request, response);
+    }
+
+
 
 }

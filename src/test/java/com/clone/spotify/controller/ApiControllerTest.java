@@ -1,21 +1,18 @@
 package com.clone.spotify.controller;
 
 import com.clone.spotify.entity.User;
-import com.clone.spotify.service.JwtTokenProvider;
-import com.clone.spotify.service.UserService;
+import com.clone.spotify.service.AuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.sql.Date;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -25,21 +22,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ApiControllerTest {
 
     private MockMvc mockMvc;
-
-    @Mock
-    private UserService userService;
-
-    @Mock
-    private AuthenticationManager authenticationManager;
-
-    @Mock
-    private JwtTokenProvider jwtTokenProvider;
-
-    @InjectMocks
-    private ApiController apiController;
+    private AuthenticationService authenticationService;
 
     @BeforeEach
     public void setUp() {
+        authenticationService = mock(AuthenticationService.class);
+        ApiController apiController = new ApiController(authenticationService);
         mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
     }
 
@@ -49,14 +37,19 @@ public class ApiControllerTest {
         String password = "password";
         String jsonRequest = "{\"email\":\"" + username + "\", \"password\":\"" + password + "\"}";
 
-        when(authenticationManager.authenticate(any())).thenReturn(mock(Authentication.class));
-        when(jwtTokenProvider.createToken(anyString(), any())).thenReturn("token");
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", "accessToken");
+        tokens.put("refreshToken", "refreshToken");
+
+        when(authenticationService.authenticateUserAndCreateTokens(any(User.class), any(HttpServletResponse.class)))
+                .thenReturn(tokens);
 
         mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("token"));
+                .andExpect(jsonPath("$.accessToken").value("accessToken"))
+                .andExpect(jsonPath("$.refreshToken").value("refreshToken"));
     }
 
     @Test
@@ -64,23 +57,22 @@ public class ApiControllerTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setPassword("password");
-        user.setBirth(Date.valueOf("2005-12-30"));
-        user.setName("Test Name");
-        user.setGender("M");
 
-        when(userService.createUser(any(User.class))).thenReturn(user);
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", "accessToken");
+        tokens.put("refreshToken", "refreshToken");
 
-        String jsonRequest = "{\"email\":\"" + user.getEmail() +
-                "\", \"password\":\"" + user.getPassword() +
-                "\", \"birth\":\"" + user.getBirth() +
-                "\", \"name\":\"" + user.getName() +
-                "\", \"gender\":\"" + user.getGender() + "\"}";
+        when(authenticationService.createUser(any(User.class))).thenReturn(user);
+        when(authenticationService.authenticateUserAndCreateTokens(any(User.class), any(HttpServletResponse.class)))
+                .thenReturn(tokens);
 
+        String jsonRequest = "{\"email\":\"" + user.getEmail() + "\", \"password\":\"" + user.getPassword() + "\"}";
 
         mockMvc.perform(post("/api/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value(user.getEmail()));
+                .andExpect(jsonPath("$.accessToken").value("accessToken"))
+                .andExpect(jsonPath("$.refreshToken").value("refreshToken"));
     }
 }
