@@ -4,36 +4,38 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
-@Table(name = "songs")
+@Table(name = "songs", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"title", "album_id"})
+})@Getter
 @Setter
-@Getter
 public class Song {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long songId;
+    private Long id;
 
-    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private int duration;
-
-    private LocalDate releaseDate;
-    private String genre;
-    private String fileUrl;
+    @ManyToOne
+    @JoinColumn(name = "artist_id", referencedColumnName = "id")
+    private Artist artist;
 
     @ManyToOne
-    @JoinColumn(name = "album_id")
+    @JoinColumn(name = "album_id", referencedColumnName = "id")
     private Album album;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @ManyToOne
+    @JoinColumn(name = "genre_id", referencedColumnName = "id")
+    private Genre genre;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Integer duration;
+    private Date releaseDate;
 
+    @Column(columnDefinition = "TEXT")
+    private String lyrics;
+
+    private String filePath;
 }
+

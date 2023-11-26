@@ -6,16 +6,14 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "artists", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"name"})
-})@Getter
+@Table(name = "genres")
+@Getter
 @Setter
-public class Artist {
+public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-    private String bio;
 }
 

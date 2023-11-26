@@ -4,32 +4,25 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
-@Table(name = "albums")
+@Table(name = "albums", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"title", "artist_id"})
+})@Getter
 @Setter
-@Getter
 public class Album {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long albumId;
+    private Long id;
 
-    @Column(nullable = false)
     private String title;
 
-    private LocalDate releaseDate;
-    private String coverImageUrl;
-
     @ManyToOne
-    @JoinColumn(name = "artist_id")
+    @JoinColumn(name = "artist_id", referencedColumnName = "id")
     private Artist artist;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
+    private Date releaseDate;
+    private String coverImagePath;
 }
+
