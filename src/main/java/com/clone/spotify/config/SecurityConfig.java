@@ -1,6 +1,8 @@
 package com.clone.spotify.config;
 
 import com.clone.spotify.filter.JwtTokenFilter;
+import com.clone.spotify.hander.OAuth2FailureHandler;
+import com.clone.spotify.hander.OAuth2SuccessHandler;
 import com.clone.spotify.service.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +43,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/**", "/signup", "/login", "/css/**", "/images/**", "/js/**").permitAll()
                 .antMatchers("/test").hasRole("USER")
                 .anyRequest().authenticated()
+                .and()
+                .oauth2Login()
+                .loginPage("/login")
+                .successHandler(new OAuth2SuccessHandler())
+                .failureHandler(new OAuth2FailureHandler())
                 .and()
                 .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
