@@ -2,8 +2,6 @@ package com.clone.spotify.controller;
 
 import com.clone.spotify.entity.User;
 import com.clone.spotify.service.AuthenticationService;
-import com.clone.spotify.service.JwtTokenProvider;
-import com.clone.spotify.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 @Slf4j
-public class ApiController {
+public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    public ApiController(AuthenticationService authenticationService) {
+    public AuthController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 

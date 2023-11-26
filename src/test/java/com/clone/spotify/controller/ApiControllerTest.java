@@ -27,7 +27,7 @@ public class ApiControllerTest {
     @BeforeEach
     public void setUp() {
         authenticationService = mock(AuthenticationService.class);
-        ApiController apiController = new ApiController(authenticationService);
+        AuthController apiController = new AuthController(authenticationService);
         mockMvc = MockMvcBuilders.standaloneSetup(apiController).build();
     }
 

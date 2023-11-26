@@ -5,7 +5,7 @@ function login(event) {
   const email = document.querySelector('input[name="email"]').value;
   const password = document.querySelector('input[name="password"]').value;
 
-  axios.post('/api/login', {
+  axios.post('/api/auth/login', {
     email: email,
     password: password
   }, {

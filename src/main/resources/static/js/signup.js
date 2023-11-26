@@ -76,7 +76,7 @@ function signup(event) {
     const gender = document.getElementById('gender').value;
     const name = document.querySelector('input[name="name"]').value;
   
-    axios.post('/api/signup', {
+    axios.post('/api/auth/signup', {
       email: email,
       password: password,
       birth: birth,
