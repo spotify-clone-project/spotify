@@ -23,7 +23,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
+        // 정적 리소스에 대한 요청은 토큰 검증을 건너뜁니다.
+        if (isStaticResource(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         try {
             String accessToken = extractToken(request, "ACCESS_TOKEN");
             String refreshToken = extractToken(request, "REFRESH_TOKEN");
@@ -70,5 +74,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         cookie.setPath("/");
         cookie.setMaxAge(0); // 쿠키 만료
         response.addCookie(cookie);
+    }
+
+// 정적 리소스 및 지정된 경로 확인 메서드
+    private boolean isStaticResource(String uri) {
+        return uri.startsWith("/images/") || uri.startsWith("/js/") ||
+                uri.startsWith("/css/") || uri.startsWith("/api/") ||
+                uri.equals("/signup") || uri.equals("/login");
     }
 }
