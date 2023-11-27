@@ -6,7 +6,11 @@ import com.clone.spotify.entity.Song;
 import com.clone.spotify.repository.MusicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class MusicService {
@@ -28,6 +32,15 @@ public class MusicService {
 
     public List<Song> getAllSongs() {
         return musicRepository.getAllSongs();
+    }
+
+    public Map<String, Object> getAlbum(long id) throws IllegalAccessException {
+        Album album = musicRepository.getAlbum(id).orElseThrow(() -> new IllegalAccessException("잘못된 접근"));
+        Set<Song> songs = musicRepository.getSongsByAlbumId(id);
+        Map<String, Object> result = new HashMap<>();
+        result.put("album", album);
+        result.put("songs", songs);
+        return result;
     }
 }
 

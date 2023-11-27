@@ -6,6 +6,8 @@ import com.clone.spotify.entity.Song;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class MusicRepository {
@@ -31,6 +33,14 @@ public class MusicRepository {
 
     public List<Song> getAllSongs() {
         return songRepository.findAll();
+    }
+
+    public Optional<Album> getAlbum(long id) {
+        return albumRepository.findById(id);
+    }
+
+    public Set<Song> getSongsByAlbumId(long id) {
+        return songRepository.findByAlbumId(id);
     }
 }
 
