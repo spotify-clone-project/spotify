@@ -46,7 +46,7 @@ public class AuthenticationService {
         this.userService = userService;
     }
 
-    public Map<String, String> authenticateUserAndCreateTokens(User user, HttpServletResponse response) {
+    public Map<String, String> authenticateUserAndCreateTokens(User user) {
         String username = user.getEmail();
         String password = user.getPassword();
 
@@ -57,24 +57,11 @@ public class AuthenticationService {
         String accessToken = jwtTokenProvider.createToken(username, authentication.getAuthorities());
         String refreshToken = jwtTokenProvider.createRefreshToken(username);
 
-        setTokenCookie(response, "ACCESS_TOKEN", accessToken, jwtTokenProvider.getAccessTokenValidityInMilliseconds());
-        setTokenCookie(response, "REFRESH_TOKEN", refreshToken, jwtTokenProvider.getRefreshTokenValidityInMilliseconds());
-
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         tokens.put("refreshToken", refreshToken);
 
-        System.out.println("생성한 토큰: " + accessToken + "/" + refreshToken);
-
         return tokens;
-    }
-
-    private void setTokenCookie(HttpServletResponse response, String name, String token, long duration) {
-        Cookie cookie = new Cookie(name, token);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (duration / 1000));
-        response.addCookie(cookie);
     }
 
     public User createUser(User user) {
@@ -100,17 +87,14 @@ public class AuthenticationService {
         return userRepository.save(user);
     }
 
-    public void logout(HttpServletResponse response) {
-        // 쿠키에서 JWT 토큰 제거
-        Cookie cookie = new Cookie("JWT_TOKEN", null);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 쿠키 만료
-        response.addCookie(cookie);
+    public void logout() {
+
+        System.out.println("로그아웃 로직 작성 필요");
+
     }
 
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = extractRefreshToken(request);
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        String refreshToken = extractToken(request, "Authorization");
         if (refreshToken != null && jwtTokenProvider.validateRefreshToken(refreshToken)) {
             String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
 
@@ -119,13 +103,6 @@ public class AuthenticationService {
 
             // 새로운 액세스 토큰 생성
             String newAccessToken = jwtTokenProvider.createToken(username, authorities);
-
-            // 액세스 토큰 쿠키 설정
-            Cookie accessCookie = new Cookie("ACCESS_TOKEN", newAccessToken);
-            accessCookie.setHttpOnly(true);
-            accessCookie.setPath("/");
-            accessCookie.setMaxAge((int) (jwtTokenProvider.getAccessTokenValidityInMilliseconds() / 1000));
-            response.addCookie(accessCookie);
 
             // 새로운 액세스 토큰 반환
             Map<Object, Object> model = new HashMap<>();
@@ -136,15 +113,12 @@ public class AuthenticationService {
         }
     }
 
-    private String extractRefreshToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("REFRESH_TOKEN".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private String extractToken(HttpServletRequest request, String headerName) {
+        String bearerToken = request.getHeader(headerName);
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
         return null;
     }
+
 }

@@ -10,7 +10,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
-public class ApiControllerTest {
+public class AuthControllerTest {
 
     private MockMvc mockMvc;
     private AuthenticationService authenticationService;
@@ -41,7 +40,7 @@ public class ApiControllerTest {
         tokens.put("accessToken", "accessToken");
         tokens.put("refreshToken", "refreshToken");
 
-        when(authenticationService.authenticateUserAndCreateTokens(any(User.class), any(HttpServletResponse.class)))
+        when(authenticationService.authenticateUserAndCreateTokens(any(User.class)))
                 .thenReturn(tokens);
 
         mockMvc.perform(post("/api/login")
@@ -63,7 +62,7 @@ public class ApiControllerTest {
         tokens.put("refreshToken", "refreshToken");
 
         when(authenticationService.createUser(any(User.class))).thenReturn(user);
-        when(authenticationService.authenticateUserAndCreateTokens(any(User.class), any(HttpServletResponse.class)))
+        when(authenticationService.authenticateUserAndCreateTokens(any(User.class)))
                 .thenReturn(tokens);
 
         String jsonRequest = "{\"email\":\"" + user.getEmail() + "\", \"password\":\"" + user.getPassword() + "\"}";

@@ -35,20 +35,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .httpBasic().disable()
-                .csrf().ignoringAntMatchers("/api/**")
-                .and()
+                .cors().disable()
+                .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/**", "/signup", "/login", "/css/**", "/images/**", "/js/**").permitAll()
-                .antMatchers("/test").hasRole("USER")
+                .antMatchers("/api/**","/file/**", "/signup", "/login", "/css/**", "/images/**", "/js/**").permitAll()
+                .antMatchers().hasRole("USER")
                 .anyRequest().authenticated()
                 .and()
-                .oauth2Login()
-                .loginPage("/login")
-                .successHandler(new OAuth2SuccessHandler())
-                .failureHandler(new OAuth2FailureHandler())
-                .and()
+//                .oauth2Login()
+//                .loginPage("/login")
+//                .successHandler(new OAuth2SuccessHandler())
+//                .failureHandler(new OAuth2FailureHandler())
+//                .and()
                 .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
 

@@ -12,6 +12,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
+
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
@@ -23,63 +25,50 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         // 정적 리소스에 대한 요청은 토큰 검증을 건너뜁니다.
         if (isStaticResource(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
+
         try {
-            String accessToken = extractToken(request, "ACCESS_TOKEN");
-            String refreshToken = extractToken(request, "REFRESH_TOKEN");
+            // 엑세스 토큰을 가져옴
+            String accessToken = extractToken(request, "Authorization");
 
-            log.info("Extracted Access Token: {}", accessToken);
-            log.info("Extracted Refresh Token: {}", refreshToken);
-
+            // 토큰이 유효하다면 시큐리티 객체에 유저정보를 넣음 (로그인과 동일)
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-                log.info("Access Token validation successful");
+                System.out.println("인증 성공!");
                 Authentication auth = jwtTokenProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            } else {
-                log.warn("Access Token validation failed or token is null for request: {}", request.getRequestURL());
-                if (refreshToken != null && !jwtTokenProvider.validateRefreshToken(refreshToken)) {
-                    log.warn("Refresh Token is invalid, expiring it");
-                    expireCookie(response, "REFRESH_TOKEN");
-                }
+            }
+            else if(accessToken != null && jwtTokenProvider.validateRefreshToken(accessToken)) {
+                filterChain.doFilter(request, response);
+            }
+            else {
+                // 유효하지 않은 토큰일 경우 401 상태 코드를 설정
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
         } catch (UserNotFoundException e) {
             log.error("UserNotFoundException: {}", e.getMessage());
-            e.printStackTrace();
-            expireCookie(response, "ACCESS_TOKEN");
-            expireCookie(response, "REFRESH_TOKEN");
         } finally {
             filterChain.doFilter(request, response);
         }
     }
 
-    private String extractToken(HttpServletRequest request, String tokenName) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (tokenName.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private String extractToken(HttpServletRequest request, String headerName) {
+        String bearerToken = request.getHeader(headerName);
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
         return null;
     }
 
-    private void expireCookie(HttpServletResponse response, String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 쿠키 만료
-        response.addCookie(cookie);
-    }
 
-// 정적 리소스 및 지정된 경로 확인 메서드
+    // 정적 리소스 및 지정된 경로 확인 메서드
     private boolean isStaticResource(String uri) {
         return uri.startsWith("/images/") || uri.startsWith("/js/") ||
-                uri.startsWith("/css/") || uri.startsWith("/api/") ||
+                uri.startsWith("/css/") || uri.startsWith("/api/auth/") || uri.startsWith("/file/music/") ||
                 uri.equals("/signup") || uri.equals("/login");
     }
 }

@@ -1,8 +1,15 @@
 package com.clone.spotify.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -17,5 +24,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/file/music/**")
                 .addResourceLocations("file:/Users/UK/Desktop/MusicList/songs/", "file:/Users/UK/Desktop/MusicList/images/", "file:/Users/UK/Desktop/MusicList/lyrics/");
     }
+
 }
 
