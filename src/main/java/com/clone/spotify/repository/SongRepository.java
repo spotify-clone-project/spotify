@@ -9,4 +9,6 @@ import java.util.Set;
 @Repository
 public interface SongRepository extends JpaRepository<Song, Long> {
     Set<Song> findByAlbumId(long id);
+
+    Set<Song> findByArtistId(long id);
 }

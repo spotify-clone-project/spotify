@@ -30,6 +30,12 @@ public class MusicController {
         return musicService.getAllArtists();
     }
 
+    @GetMapping("/artist/{id}")
+    public ResponseEntity<?> getArtists(@PathVariable long id) throws IllegalAccessException {
+        Map<String, Object> result = musicService.getArtist(id);
+        return ResponseEntity.ok().body(result);
+    }
+
     @GetMapping("/albums")
     public List<Album> getAllAlbums() {
         return musicService.getAllAlbums();
