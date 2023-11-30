@@ -43,13 +43,17 @@ public class MusicService {
         return result;
     }
 
-    public Map<String, Object> getArtist(long id) {
-        Artist artist = musicRepository.getArtist(id).orElseThrow(() -> new IllegalArgumentException("잘못된 접근"));
+    public Map<String, Object> getArtist(long id) throws IllegalAccessException {
+        Artist artist = musicRepository.getArtist(id).orElseThrow(() -> new IllegalAccessException("잘못된 접근"));
         Set<Song> songs = musicRepository.getSongByArtistId(id);
         Map<String,Object> result = new HashMap<>();
         result.put("artist", artist);
         result.put("songs", songs);
         return result;
+    }
+
+    public Song getSongById(long id) throws IllegalAccessException {
+        return musicRepository.getSongById(id).orElseThrow(() -> new IllegalAccessException("잘못된 접근"));
     }
 }
 

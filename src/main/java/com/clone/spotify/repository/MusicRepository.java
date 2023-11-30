@@ -50,5 +50,9 @@ public class MusicRepository {
     public Set<Song> getSongByArtistId(long id) {
         return songRepository.findByArtistId(id);
     }
+
+    public Optional<Song> getSongById(long id) {
+        return songRepository.findById(id);
+    }
 }
 

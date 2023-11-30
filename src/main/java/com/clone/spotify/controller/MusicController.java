@@ -51,4 +51,9 @@ public class MusicController {
     public List<Song> getAllSongs() {
         return musicService.getAllSongs();
     }
+
+    @GetMapping("/song/{id}")
+    public Song getSongById(@PathVariable long id) throws IllegalAccessException {
+        return musicService.getSongById(id);
+    }
 }

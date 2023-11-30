@@ -22,7 +22,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         // 새로운 리소스 경로 매핑 추가
         registry.addResourceHandler("/file/music/**")
-                .addResourceLocations("file:/Users/UK/Desktop/MusicList/songs/", "file:/Users/UK/Desktop/MusicList/images/", "file:/Users/UK/Desktop/MusicList/lyrics/");
+                .addResourceLocations("file:/Users/UK/Desktop/MusicList/", "file:/Users/UK/Desktop/MusicList/images/", "file:/Users/UK/Desktop/MusicList/lyrics/");
     }
 
 }

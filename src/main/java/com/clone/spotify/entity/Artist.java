@@ -17,6 +17,6 @@ public class Artist {
 
     private String name;
     private String bio;
-    private String coverImagePath;
+    private String profileImagePath;
 }
 
