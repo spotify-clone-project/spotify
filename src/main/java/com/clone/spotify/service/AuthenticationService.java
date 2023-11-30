@@ -4,7 +4,9 @@ import com.clone.spotify.entity.Role;
 import com.clone.spotify.entity.User;
 import com.clone.spotify.repository.RoleRepository;
 import com.clone.spotify.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,15 +18,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
@@ -35,15 +37,17 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
 
     private final UserRepository userRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Autowired
-    public AuthenticationService(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, RoleRepository roleRepository, UserRepository userRepository, UserService userService) {
+    public AuthenticationService(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, RoleRepository roleRepository, UserRepository userRepository, UserService userService, RedisTemplate<String, String> redisTemplate) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.redisTemplate = redisTemplate;
     }
 
     public Map<String, String> authenticateUserAndCreateTokens(User user) {
@@ -87,38 +91,54 @@ public class AuthenticationService {
         return userRepository.save(user);
     }
 
-    public void logout() {
-
-        System.out.println("로그아웃 로직 작성 필요");
-
-    }
-
-    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
-        String refreshToken = extractToken(request, "Authorization");
+    public void logout(HttpServletRequest request) {
+        String refreshToken = extractToken(request);
+        System.out.println(refreshToken);
         if (refreshToken != null && jwtTokenProvider.validateRefreshToken(refreshToken)) {
-            String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
-
-            UserDetails userDetails = userService.loadUserByUsername(username);
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-
-            // 새로운 액세스 토큰 생성
-            String newAccessToken = jwtTokenProvider.createToken(username, authorities);
-
-            // 새로운 액세스 토큰 반환
-            Map<Object, Object> model = new HashMap<>();
-            model.put("accessToken", newAccessToken);
-            return ResponseEntity.ok(model);
+            long remainingTime = jwtTokenProvider.getRemainingTime(refreshToken);
+            redisTemplate.opsForValue().set(refreshToken, "blacklisted", remainingTime, TimeUnit.SECONDS);
+            log.info("로그아웃 처리 완료");
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+            log.error("유효하지 않은 토큰");
         }
     }
 
-    private String extractToken(HttpServletRequest request, String headerName) {
-        String bearerToken = request.getHeader(headerName);
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        String refreshToken = extractToken(request);
+        if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+
+        // 블랙리스트에 있는 토큰인지 확인
+        if (isTokenBlacklisted(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is blacklisted");
+        }
+
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+        UserDetails userDetails = userService.loadUserByUsername(username);
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+
+        // 새로운 액세스 토큰 생성
+        String newAccessToken = jwtTokenProvider.createToken(username, authorities);
+
+        // 새로운 액세스 토큰 반환
+        Map<Object, Object> model = new HashMap<>();
+        model.put("accessToken", newAccessToken);
+        return ResponseEntity.ok(model);
+    }
+
+
+    private String extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    private boolean isTokenBlacklisted(String refreshToken) {
+        // 레디스에서 토큰 조회
+        return Boolean.TRUE.equals(redisTemplate.hasKey(refreshToken));
     }
 
 }

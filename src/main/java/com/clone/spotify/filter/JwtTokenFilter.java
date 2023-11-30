@@ -8,11 +8,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Enumeration;
 
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
@@ -34,7 +32,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         try {
             // 엑세스 토큰을 가져옴
-            String accessToken = extractToken(request, "Authorization");
+            String accessToken = extractToken(request);
 
             // 토큰이 유효하다면 시큐리티 객체에 유저정보를 넣음 (로그인과 동일)
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
@@ -56,8 +54,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
     }
 
-    private String extractToken(HttpServletRequest request, String headerName) {
-        String bearerToken = request.getHeader(headerName);
+    private String extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

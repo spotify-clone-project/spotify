@@ -101,5 +101,19 @@ public class JwtTokenProvider {
     }
 
 
+    public long getRemainingTime(String refreshToken) {
+        // 토큰에서 만료 시간을 추출
+        Date expiration = Jwts.parser()
+                .setSigningKey(refreshSecretKey) // secretKey는 토큰을 검증하는데 사용하는 키입니다
+                .parseClaimsJws(refreshToken)
+                .getBody()
+                .getExpiration();
+
+        // 현재 시간과의 차이를 계산 (밀리초 단위)
+        long remainingTime = expiration.getTime() - System.currentTimeMillis();
+
+        // 밀리초를 초 단위로 변환하여 반환
+        return remainingTime / 1000;
+    }
 }
 
